@@ -12,6 +12,7 @@ logger:
 api:
   encryption:
     key: !secret api_encryption_key
+  reboot_timeout: 0s
 
 ota:
   password: !secret ota_password
@@ -26,3 +27,62 @@ wifi:
     password: !secret wifi_ap_password
 
 captive_portal:
+
+binary_sensor:
+  - platform: gpio
+    id: down
+    pin:
+      number: GPIO25
+      mode:
+        input: true
+        pulldown: true
+    on_press:
+      then:
+        light.dim_relative:
+          id: lightstrip
+          relative_brightness: -5%
+  - platform: gpio
+    id: up
+    pin:
+      number: GPIO26
+      mode:
+        input: true
+        pulldown: true
+    on_press:
+      then:
+        light.dim_relative:
+          id: lightstrip
+          relative_brightness: 5%
+  - platform: gpio
+    id: power
+    pin:
+      number: GPIO14
+      mode:
+        input: true
+        pulldown: true
+    on_press:
+      then:
+        if:
+          condition:
+            light.is_off: lightstrip
+          then: 
+            light.turn_on:
+              id: lightstrip
+              brightness: 100%
+          else:
+            light.turn_off:
+              id: lightstrip
+
+output:
+  - platform: ledc
+    pin: GPIO13
+    id: ledc_id
+    frequency: 1000Hz
+
+# Example usage in a light
+light:
+  - platform: monochromatic
+    output: ledc_id
+    id: lightstrip
+    name: "Lightstrip"
+    restore_mode: ALWAYS_ON
