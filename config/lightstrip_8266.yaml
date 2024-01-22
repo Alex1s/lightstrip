@@ -1,0 +1,87 @@
+esphome:
+  name: lightstrip
+  friendly_name: Lightstrip
+
+esp8266:
+  board: d1_mini_lite
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+  reboot_timeout: 0s
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Lightstrip Fallback Hotspot"
+    password: !secret wifi_ap_password
+
+captive_portal:
+
+binary_sensor:
+  - platform: gpio
+    id: down
+    pin:
+      number: D5
+      mode:
+        input: true
+ #       pulldown: true  # make sure to pull down!
+    on_press:
+      then:
+        light.dim_relative:
+          id: lightstrip
+          relative_brightness: -5%
+  - platform: gpio
+    id: up
+    pin:
+      number: D0
+      mode:
+        input: true
+ #       pulldown: true  # make sure to pull down!
+    on_press:
+      then:
+        light.dim_relative:
+          id: lightstrip
+          relative_brightness: 5%
+  - platform: gpio
+    id: power
+    pin:
+      number: D2
+      mode:
+        input: true
+ #       pulldown: true  # make sure to pull down!
+    on_press:
+      then:
+        if:
+          condition:
+            light.is_off: lightstrip
+          then: 
+            light.turn_on:
+              id: lightstrip
+              brightness: 100%
+          else:
+            light.turn_off:
+              id: lightstrip
+
+output:
+  - platform: esp8266_pwm
+    pin: D1
+    frequency: 1000Hz
+    id: pwm_output
+
+light:
+  - platform: monochromatic
+    output: pwm_output
+    id: lightstrip
+    name: "Lightstrip"
+    restore_mode: ALWAYS_ON
