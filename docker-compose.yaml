@@ -1,7 +1,7 @@
 services:
   esphome:
     container_name: "esphome"
-    image: "ghcr.io/esphome/esphome"
+    image: "ghcr.io/esphome/esphome:2023.12.9"  # https://github.com/esphome/esphome/releases/tag/2023.12.9
     volumes:
       - "./config:/config"
       - "/etc/localtime:/etc/localtime:ro"
