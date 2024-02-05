@@ -1,3 +1,17 @@
+script:
+  - id: reset_light_on
+    mode: queued
+    then:
+      - light.turn_on:
+          id: lightstrip
+          brightness: 60%
+  - id: reset_light_off
+    mode: queued
+    then:
+      - light.turn_on:
+          id: lightstrip
+          brightness: 0%
+
 esphome:
   name: lightstrip-esp32-c3-super-mini
   friendly_name: Lightstrip ESP32 C3 Super Mini
@@ -6,10 +20,7 @@ esphome:
   on_boot:
     priority: 600.0  # "This is where most sensors are set up.""
     then:
-      - logger.log: "On boot turn light on"
-      - light.turn_on:
-          id: lightstrip
-          brightness: 90%
+      - script.execute: reset_light_on
 
 esp32:
   board: lolin_c3_mini  # is actually a c3_super_mini
@@ -21,9 +32,9 @@ esp32:
 
 # Enable logging
 logger:
-  level: VERY_VERBOSE
-  logs:
-    api.service: DEBUG
+#  level: VERY_VERBOSE
+#  logs:
+#    api.service: DEBUG
 
 # Enable Home Assistant API
 api:
@@ -45,31 +56,47 @@ wifi:
 
 captive_portal:
 
-binary_sensor:
-  - platform: gpio
-    id: up
-    pin:
-      number: 0
-      mode:
-        input: true
-        pulldown: true
-    on_press:
-      then:
+
+sensor:
+  - platform: rotary_encoder
+    name: "Rotary Encoder"
+    id: my_rotary_encoder
+    pin_a: 0
+    pin_b: 1
+    on_clockwise:
         light.dim_relative:
           id: lightstrip
           relative_brightness: 1%
-  - platform: gpio
-    id: down
-    pin:
-      number: 1
-      mode:
-        input: true
-        pulldown: true
-    on_press:
-      then:
+    on_anticlockwise:
         light.dim_relative:
           id: lightstrip
           relative_brightness: -1%
+
+binary_sensor:
+#  - platform: gpio
+#    id: up
+#    pin:
+#      number: 0
+#      mode:
+#        input: true
+#        pulldown: true
+#    on_press:
+#      then:
+#        light.dim_relative:
+#          id: lightstrip
+#          relative_brightness: 1%
+#  - platform: gpio
+#    id: down
+#    pin:
+#      number: 1
+#      mode:
+#        input: true
+#        pulldown: true
+#    on_press:
+#      then:
+#        light.dim_relative:
+#          id: lightstrip
+#          relative_brightness: -1%
   - platform: gpio
     id: power
     pin:
@@ -79,17 +106,13 @@ binary_sensor:
         pulldown: true
     on_press:
       then:
-        - logger.log: "power is pressed"
-        - if:
-            condition:
-              light.is_off: lightstrip
-            then: 
-              light.turn_on:
-                id: lightstrip
-                brightness: 90%
-            else:
-              light.turn_off:
-                id: lightstrip
+        if:
+          condition:
+            light.is_off: lightstrip
+          then:
+            script.execute: reset_light_on
+          else:
+            script.execute: reset_light_off
 
 #output:
 #  - platform: ledc
