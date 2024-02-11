@@ -4,7 +4,7 @@ script:
     then:
       - light.turn_on:
           id: lightstrip
-          brightness: 60%
+          brightness: 50%
   - id: reset_light_off
     mode: queued
     then:
@@ -14,7 +14,7 @@ script:
 
 esphome:
   name: lightstrip-esp32-c3-super-mini
-  friendly_name: Lightstrip ESP32 C3 Super Mini
+  friendly_name: Bibo Lichterkette
   platformio_options:
     board_build.flash_mode: dio  # qio does not seem to work
   on_boot:
@@ -32,9 +32,9 @@ esp32:
 
 # Enable logging
 logger:
-#  level: VERY_VERBOSE
-#  logs:
-#    api.service: DEBUG
+  level: VERY_VERBOSE
+  logs:
+    api.service: DEBUG
 
 # Enable Home Assistant API
 api:
@@ -125,16 +125,22 @@ output:
   - platform: ledc
     pin: 10
     id: ledc_id
-    frequency: 1000Hz  # highest frequency supported by the LED driver
-    min_power: 0.0015
+    # frequency: 1000Hz  # highest frequency supported by the LED driver
+    frequency: 100Hz  # maybe this removed the buzzing sound?
+    # one LED:
+    # min_power: 0.0015
+    # zero_means_zero: true
+    # min_turn_on_power: 0.05
+    # ten LEDs:
+    min_power: 0.25%
     zero_means_zero: true
-    min_turn_on_power: 0.05
+    min_turn_on_power: 2%
 
 light:
   - platform: monochromatic
     output: ledc_id
     id: lightstrip
-    name: "Lightstrip"
+    name: "Bibo Lichterkette"
     restore_mode: ALWAYS_OFF  # we switch the light on during on_boot, that way we can also set brightness
     default_transition_length: 0s
 #    gamma_correct: 1
