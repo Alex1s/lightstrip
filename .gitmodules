@@ -1,4 +1,4 @@
 [submodule "esphome"]
 	path = esphome
-	url = ../Alex1s/esphome.git
+	url = ../esphome.git
 	branch = lightstrip
